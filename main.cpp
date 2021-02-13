@@ -1,48 +1,70 @@
 #include <iostream>
 #include <string>
+#include <cstring>
+#include <vector>
+#include <fstream>
+
 #define ID_SIZE 8
 #define BIO_SIZE 200
 #define NAME_SIZE 500
+#define SPLIT_PARAMETER 0.8
+
 using namespace std;
 
-class Bucket{
+class Record{
 public:
-    char* id;
-    char* managerId;
-    char* bio;
-    char* name;
-    Bucket(char* id, char* managerId, char* bio, char* name);
+    string id;
+    string managerId;
+    string bio;
+    string name;
 
-    virtual ~Bucket();
+    Record(string id, string managerId, string bio, string name);
 };
 
-Bucket::~Bucket(){
-    free(this->id);
-    free(this->managerId);
-    free(this->bio);
-    free(this->name);
+class Block{
+public:
+    vector<Record> records;
+
+    void insert(Record);
+};
+
+class HashTable{
+public:
+
+};
+
+Record::Record(string id, string name, string bio, string managerId){
+    // copy values into bucket up to the maximum size
+    this->id = id.substr(0, ID_SIZE);
+    this->managerId = managerId.substr(0, ID_SIZE);
+    this->bio = bio.substr(0, BIO_SIZE);
+    this->name = name.substr(0, NAME_SIZE);
 }
 
-Bucket::Bucket(char* id, char* managerId, char* bio, char* name){
-    // allocate memory for each member
-    this->id = (char*)malloc(ID_SIZE);
-    this->managerId = (char*)malloc(ID_SIZE);
-    this->bio = (char*)malloc(BIO_SIZE);
-    this->name = (char*)malloc(NAME_SIZE);
 
-    // copy values into bucket
-    snprintf(this->id, ID_SIZE, "%s", id);
-    snprintf(this->managerId, ID_SIZE, "%s", managerId);
-    snprintf(this->bio, BIO_SIZE, "%s", bio);
-    snprintf(this->name, NAME_SIZE, "%s", name);
+vector<Record> getRecordsFromFile(string filename){
+    vector<Record> records;
+    string id, name, bio, managerId;
+
+    ifstream file(filename.c_str());
+
+    while(getline(file, id, ',')){
+        getline(file, name, ',');
+        getline(file, bio, ',');
+        getline(file, managerId, '\n');
+        records.emplace_back(Record(id, name, bio, managerId));
+    }
+    return records;
 }
-
 
 int main(int argc, char* argv[]){
-    Bucket lasagna = Bucket("1", "2", "I'm a cat who loves to snooze", "Garfielf");
-    cout << "id: " << lasagna.id << endl;
-    cout << "name: " << lasagna.name << endl;
-    cout << "bio: " << lasagna.bio << endl;
-    cout << "managerId: " << lasagna.managerId << endl;
+    vector<Record> records = getRecordsFromFile("Employees.csv");
+    for(auto& record : records){
+        cout << "id: " << record.id << endl;
+        cout << "name: " << record.name << endl;
+        cout << "bio: " << record.bio << endl;
+        cout << "managerId: " << record.managerId << endl;
+        cout << "------------------------" << endl;
+    }
 }
 
