@@ -7,6 +7,7 @@
 #define ID_SIZE 8
 #define BIO_SIZE 200
 #define NAME_SIZE 500
+#define BLOCK_SIZE 4096
 #define SPLIT_PARAMETER 0.8
 
 using namespace std;
@@ -35,8 +36,7 @@ int Employee::getSize(){
 class Block{
 public:
 
-    vector<Employee> employees;
-    // vector<Block> overflow;
+    vector<Employee> employees, overflow;
     int modFactor;
     void insert(Employee);
     int getTotalSize();
@@ -53,8 +53,15 @@ Block::Block(int modFactor){
 }
 
 void Block::insert(Employee emp){
-    // make sure to enforce block size
-    cout << "INSERT HERE" << endl;
+
+    // make sure to enforce block size (create overflow if already full)
+    if(getTotalSize() + emp.getSize() > BLOCK_SIZE){
+        cout << "Inserting " << emp.id << " into overflow" << endl;
+        overflow.push_back(emp);
+    } else {
+        cout << "Inserting " << emp.id << " into employees" << endl;
+        employees.push_back(emp);
+    }
 }
 
 int Block::getTotalSize(){
@@ -72,7 +79,7 @@ public:
     vector<Block> blocks;
     HashTable();
     void insert(Employee); //checks if block has space, if not: splits first
-    void split(int, Employee); //creates a new block and distributes data
+    void split(int); //creates a new block and distributes data
     int getTableSize();
 };
 
@@ -94,7 +101,7 @@ void HashTable::insert(Employee emp){
     int id = stoi(emp.id);
     int index = id % modFactor;
 
-    if((blocks[index].getTotalSize() + emp.getSize()) > 4096){
+    if((blocks[index].getTotalSize() + emp.getSize()) > BLOCK_SIZE){
         //overflow, make a overflow block
         int numEmps = 0;
         for(int ii = 0; ii < blocks.size(); ii++){
@@ -103,30 +110,49 @@ void HashTable::insert(Employee emp){
             }
         }
         // total size of all emps / (number of blocks * 4096) > 0.8
-        if(((float)getTableSize() / (float)(blocks.size() * 4096)) > SPLIT_PARAMETER){
-            split(index, emp);
+        if(((float)getTableSize() / (float)(blocks.size() * BLOCK_SIZE)) > SPLIT_PARAMETER){
+            split(index);
         }
     } else{
-        blocks[index].employees.push_back(emp);
+        blocks[index].insert(emp);
     }
 }
 
-void HashTable::split(int index, Employee emp){
+void HashTable::split(int index){
     // This calculates the modFactor
     int modFactor = pow(2, ceil(log2(blocks.size() + 1)));
-    int newIndex;
+    int newIndex = 0, overflowSize = 0;
+    int blockSize = blocks[n].employees.size();
+
     blocks.push_back(Block(modFactor));
     blocks[n].modFactor = modFactor;
-    int blockSize = blocks[n].employees.size();
+
     for (int ii = 0; ii < blockSize; ii++){
         newIndex = stoi(blocks[n].employees.back().id) % blocks[n].modFactor;
         if (newIndex != n){
+            // check for overflow here
             blocks[newIndex].insert(blocks[n].employees.back());
             blocks[n].employees.pop_back();
 
             //employee[ii] out of blocks[n] into blocks[newIndex]
         }
     }
+
+    if (!blocks[n].overflow.empty()){
+        overflowSize = blocks[n].overflow.size();
+        for (int ii = 0; ii < overflowSize; ii++){
+            newIndex = stoi(blocks[n].overflow.back().id) % blocks[n].modFactor;
+            if (newIndex != n){
+                // check for overflow here
+                blocks[newIndex].insert(blocks[n].overflow.back());
+                blocks[n].overflow.pop_back();
+            } else {
+                blocks[n].insert(blocks[n].overflow.back());
+                blocks[n].overflow.pop_back();
+            }
+        }
+    }
+
 
     if(blocks[n].modFactor == blocks[n + 1].modFactor){
         n++;
