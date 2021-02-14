@@ -52,18 +52,18 @@ vector<Record> getRecordsFromFile(string filename){
         getline(file, name, ',');
         getline(file, bio, ',');
         getline(file, managerId, '\n');
-        records.emplace_back(Record(id, name, bio, managerId));
+        records.push_back(Record(id, name, bio, managerId));
     }
     return records;
 }
 
 int main(int argc, char* argv[]){
     vector<Record> records = getRecordsFromFile("Employees.csv");
-    for(auto& record : records){
-        cout << "id: " << record.id << endl;
-        cout << "name: " << record.name << endl;
-        cout << "bio: " << record.bio << endl;
-        cout << "managerId: " << record.managerId << endl;
+    for(int i = 0; i < records.size(); i++){
+        cout << "id: " << records[i].id << endl;
+        cout << "name: " << records[i].name << endl;
+        cout << "bio: " << records[i].bio << endl;
+        cout << "managerId: " << records[i].managerId << endl;
         cout << "------------------------" << endl;
     }
 }
