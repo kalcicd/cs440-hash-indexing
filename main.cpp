@@ -38,10 +38,15 @@ public:
 
     vector<Employee> employees, overflow;
     int modFactor;
+
     void insert(Employee);
+
     int getTotalSize();
+
     int getSizeNoOverflow();
+
     Block();
+
     Block(int);
 };
 
@@ -60,13 +65,13 @@ void Block::insert(Employee emp){
     if(getSizeNoOverflow() + emp.getSize() > BLOCK_SIZE){
         cout << "---Inserting " << emp.id << " into overflow" << endl;
         overflow.push_back(emp);
-    } else {
+    } else{
         cout << "---Inserting " << emp.id << " into employees" << endl;
         employees.push_back(emp);
     }
 }
 
-int Block::getSizeNoOverflow() {
+int Block::getSizeNoOverflow(){
     int sum = 0;
     for(int ii = 0; ii < employees.size(); ii++){
         sum += employees[ii].getSize();
@@ -76,7 +81,7 @@ int Block::getSizeNoOverflow() {
 
 int Block::getTotalSize(){
     int sum = getSizeNoOverflow();
-    if(!overflow.empty()) {
+    if(!overflow.empty()){
         for(int ii = 0; ii < overflow.size(); ii++){
             sum += overflow[ii].getSize();
         }
@@ -89,7 +94,9 @@ public:
     int n; //n = current block
 
     vector<Block> blocks;
+
     HashTable();
+
     void insert(Employee); //checks if block has space, if not: splits first
     void split(int); //creates a new block and distributes data
     int getTableSize();
@@ -97,12 +104,13 @@ public:
 
 HashTable::HashTable(){
     n = 0;
-    blocks = {{}, {}};
+    blocks = {{},
+              {}};
 }
 
 int HashTable::getTableSize(){
     int sum = 0;
-    for (int ii = 0; ii < blocks.size(); ii++){
+    for(int ii = 0; ii < blocks.size(); ii++){
         sum += blocks[ii].getTotalSize();
     }
     return sum;
@@ -114,22 +122,22 @@ void HashTable::insert(Employee emp){
     int id = stoi(emp.id);
     int index = id % modFactor;
 
-    if(index >= blocks.size()) {
-        cout << "Just kidding... Mod factor " << modFactor/2 << endl;
-        index = id % (modFactor/2);
+    if(index >= blocks.size()){
+        cout << "Just kidding... Mod factor " << modFactor / 2 << endl;
+        index = id % (modFactor / 2);
     }
 
     cout << "Inserting in block #" << index << " ...\n";
     blocks[index].insert(emp);
 
-    if(((float)getTableSize() / (float)(blocks.size() * BLOCK_SIZE)) > SPLIT_PARAMETER){
+    if(((float) getTableSize() / (float) (blocks.size() * BLOCK_SIZE)) > SPLIT_PARAMETER){
         split(index);
-    } 
+    }
 }
 
 void HashTable::split(int index){
     // This calculates the modFactor
-    int modFactor = pow(2, ceil(log2(blocks.size()+1)));
+    int modFactor = pow(2, ceil(log2(blocks.size() + 1)));
     int newIndex = 0, overflowSize = 0;
     int blockSize = blocks[n].employees.size();
 
@@ -138,27 +146,27 @@ void HashTable::split(int index){
     blocks.push_back(Block(modFactor));
     blocks[n].modFactor = modFactor;
 
-    for (int ii = 0; ii < blockSize; ii++){
+    for(int ii = 0; ii < blockSize; ii++){
         newIndex = stoi(blocks[n].employees.back().id) % blocks[n].modFactor;
-        if (newIndex != n){
+        if(newIndex != n){
             blocks[newIndex].insert(blocks[n].employees.back());
             //employee[ii] out of blocks[n] into blocks[newIndex]
-        } else {
+        } else{
             blocks[n].employees.insert(blocks[n].employees.begin(), blocks[n].employees.back());
         }
         blocks[n].employees.pop_back();
 
     }
 
-    if (!blocks[n].overflow.empty()){
+    if(!blocks[n].overflow.empty()){
         overflowSize = blocks[n].overflow.size();
-        for (int ii = 0; ii < overflowSize; ii++){
+        for(int ii = 0; ii < overflowSize; ii++){
             newIndex = stoi(blocks[n].overflow.back().id) % blocks[n].modFactor;
-            if (newIndex != n){
+            if(newIndex != n){
                 // check for overflow here
                 blocks[newIndex].insert(blocks[n].overflow.back());
                 blocks[n].overflow.pop_back();
-            } else {
+            } else{
                 blocks[n].insert(blocks[n].overflow.back());
                 blocks[n].overflow.pop_back();
             }
@@ -169,8 +177,8 @@ void HashTable::split(int index){
 
     cout << "Your new n is ... ";
     if(blocks[n].modFactor == blocks[n + 1].modFactor){
-        n++;  
-    } else {
+        n++;
+    } else{
         n = 0;
     }
     cout << n << "!!!\n";
@@ -194,42 +202,43 @@ vector<Employee> getEmployeesFromFile(string filename){
     return employees;
 }
 
+
 int main(int argc, char* argv[]){
     HashTable h;
     vector<Employee> employees = getEmployeesFromFile("Employees.csv");
-    int swag = 0;
-    for(int i = 0; i < employees.size(); i++){
-        cout << "Inserting employee #"<< i << ". . ." << endl;
-        cout << "employee id: " << employees[i].id << endl;
-        h.insert(employees[i]);
-        cout << "Success!~\n------------------------" << endl;
-    }
-    // Employee garf1 = Employee("1", "Garfielf", "I'm a cat that likes lasagna", "2");
-    // Employee garf2 = Employee("2", "Garfielf", "I'm a cat that likes lasagna", "2");
-    // Employee garf3 = Employee("3", "Garfielf", "I'm a cat that likes lasagna", "2");
-    // Employee garf4 = Employee("4", "Garfielf", "I'm a cat that likes lasagna", "2");
-    // Employee garf5 = Employee("5", "Garfielf", "I'm a cat that likes lasagna", "2");
-    // Employee garf6 = Employee("6", "Garfielf", "I'm a cat that likes lasagna", "2");
-
-    // for(int ii = 0; ii < 666; ii++){
-    //     h.insert(garf1);
-    //     h.insert(garf2);
-    // }
-
-
-    //cout << "GARF1 SIZE: " << garf1.getSize() << endl;
-    int emps = 0;
-    for(int i = 0; i < h.blocks.size(); i ++) {
-        for(int j = 0; j < h.blocks[i].employees.size(); j++) {
-            emps ++;
+    if(string(argv[1]) == "C"){
+        ofstream myfile("EmployeeIndex");
+        if(myfile.is_open()){
+            for(int i = 0; i < employees.size(); i++){
+                h.insert(employees[i]);
+            }
+            for(int i = 0; i < h.blocks.size(); i++){
+                myfile << "Block " << i << ":\n";
+                for(int j = 0; j < h.blocks[i].employees.size(); j++){
+                    myfile << "--id:" << h.blocks[i].employees[j].id << endl;
+                    myfile << "--name:" << h.blocks[i].employees[j].name << endl;
+                    myfile << "--bio:" << h.blocks[i].employees[j].bio << endl;
+                    myfile << "--managerId:" << h.blocks[i].employees[j].managerId << endl << endl;
+                }
+                myfile << endl;
+            }
+            myfile.close();
         }
-    }
-    cout << "There are " << emps << " employees in total" << endl;
 
-    for(int i = 0; i < h.blocks.size(); i ++) {
-        cout << "Block " << i << ":\n";
-        for(int j = 0; j < h.blocks[i].employees.size(); j++) {
-            cout << "--id:" << h.blocks[i].employees[j].id << endl;
+
+    }
+    if(argv[1] == "L"){
+        if(argc != 3){
+            cout << "MISSING ID ARG" << endl;
+        } else{
+            for(int ii = 0; ii < employees.size(); ii++){
+                if(employees[ii].id == string(argv[2])){
+                    cout << "Employee id: " << employees[ii].id << endl;
+                    cout << "Name: " << employees[ii].name << endl;
+                    cout << "Bio: " << employees[ii].bio << endl;
+                    cout << "Manager id: " << employees[ii].managerId << endl;
+                }
+            }
         }
     }
 }
