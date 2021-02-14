@@ -34,15 +34,27 @@ int Employee::getSize(){
 
 class Block{
 public:
+
     vector<Employee> employees;
-
+    // vector<Block> overflow;
+    int modFactor;
     void insert(Employee);
-
     int getTotalSize();
+    Block();
+    Block(int);
 };
 
+Block::Block(){
+    modFactor = 2;
+}
+
+Block::Block(int modFactor){
+    this->modFactor = modFactor;
+}
+
 void Block::insert(Employee emp){
-// make sure to enforce block size
+    // make sure to enforce block size
+    cout << "INSERT HERE" << endl;
 }
 
 int Block::getTotalSize(){
@@ -58,11 +70,16 @@ public:
     int n; //n = current block
 
     vector<Block> blocks;
-
+    HashTable();
     void insert(Employee); //checks if block has space, if not: splits first
     void split(int, Employee); //creates a new block and distributes data
     int getTableSize();
 };
+
+HashTable::HashTable(){
+    n = 0;
+    blocks = {{}, {}};
+}
 
 int HashTable::getTableSize(){
     int sum = 0;
@@ -73,7 +90,7 @@ int HashTable::getTableSize(){
 }
 
 void HashTable::insert(Employee emp){
-    int modFactor = pow(2, blocks.size());
+    int modFactor = pow(2, blocks.size() - 1);
     int id = stoi(emp.id);
     int index = id % modFactor;
 
@@ -95,7 +112,28 @@ void HashTable::insert(Employee emp){
 }
 
 void HashTable::split(int index, Employee emp){
-    cout << "shout out bananas cuz ima split";
+    // This calculates the modFactor
+    int modFactor = pow(2, ceil(log2(blocks.size() + 1)));
+    int newIndex;
+    blocks.push_back(Block(modFactor));
+    blocks[n].modFactor = modFactor;
+    int blockSize = blocks[n].employees.size();
+    for (int ii = 0; ii < blockSize; ii++){
+        newIndex = stoi(blocks[n].employees.back().id) % blocks[n].modFactor;
+        if (newIndex != n){
+            blocks[newIndex].insert(blocks[n].employees.back());
+            blocks[n].employees.pop_back();
+
+            //employee[ii] out of blocks[n] into blocks[newIndex]
+        }
+    }
+
+    if(blocks[n].modFactor == blocks[n + 1].modFactor){
+        n++;
+    } else {
+        n = 0;
+    }
+    cout << "shout out bananas cuz ima split" << endl;
 }
 
 vector<Employee> getEmployeesFromFile(string filename){
@@ -116,6 +154,7 @@ vector<Employee> getEmployeesFromFile(string filename){
 int main(int argc, char* argv[]){
     HashTable h;
     vector<Employee> employees = getEmployeesFromFile("Employees.csv");
+    /*
     for(int i = 0; i < employees.size(); i++){
         cout << "Inserting employee. . ." << endl;
         cout << "id: " << employees[i].id << endl;
@@ -124,7 +163,22 @@ int main(int argc, char* argv[]){
         cout << "managerId: " << employees[i].managerId << endl;
         h.insert(employees[i]);
         cout << "------------------------" << endl;
+    } */
+    Employee garf1 = Employee("1", "Garfielf", "I'm a cat that likes lasagna", "2");
+    Employee garf2 = Employee("2", "Garfielf", "I'm a cat that likes lasagna", "2");
+    Employee garf3 = Employee("3", "Garfielf", "I'm a cat that likes lasagna", "2");
+    Employee garf4 = Employee("4", "Garfielf", "I'm a cat that likes lasagna", "2");
+    Employee garf5 = Employee("5", "Garfielf", "I'm a cat that likes lasagna", "2");
+    Employee garf6 = Employee("6", "Garfielf", "I'm a cat that likes lasagna", "2");
+
+    for(int ii = 0; ii < 108; ii++){
+        h.insert(garf1);
+        h.insert(garf2);
     }
+
+
+    //cout << "GARF1 SIZE: " << garf1.getSize() << endl;
+
     cout << "There are " << employees.size() << " employees in total" << endl;
 }
 
