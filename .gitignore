@@ -1,4 +1,6 @@
 .idea/
 cmake-build-debug/
 main.out
+main
 a.out
+EmployeeIndex.txt
