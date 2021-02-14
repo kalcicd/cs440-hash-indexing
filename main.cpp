@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <cstring>
 #include <vector>
 #include <fstream>
 #include <math.h>
@@ -15,7 +14,9 @@ using namespace std;
 class Employee{
 public:
     string id, name, bio, managerId;
+
     Employee(string id, string name, string bio, string managerId);
+
     int getSize();
 };
 
@@ -36,6 +37,7 @@ public:
     vector<Employee> employees;
 
     void insert(Employee);
+
     int getTotalSize();
 };
 
@@ -54,33 +56,45 @@ int Block::getTotalSize(){
 class HashTable{
 public:
     int n; //n = current block
-    
+
     vector<Block> blocks;
 
     void insert(Employee); //checks if block has space, if not: splits first
     void split(int, Employee); //creates a new block and distributes data
+    int getTableSize();
 };
 
-void HashTable::insert(Employee emp) {
-    int modfactor = pow(2, blocks.size());
-    int id = stoi(emp.id);
-    int index = id % modfactor;
+int HashTable::getTableSize(){
+    int sum = 0;
+    for (int ii = 0; ii < blocks.size(); ii++){
+        sum += blocks[ii].getTotalSize();
+    }
+    return sum;
+}
 
-    if((blocks[index].getTotalSize() + emp.getSize()) > 4096) {
+void HashTable::insert(Employee emp){
+    int modFactor = pow(2, blocks.size());
+    int id = stoi(emp.id);
+    int index = id % modFactor;
+
+    if((blocks[index].getTotalSize() + emp.getSize()) > 4096){
         //overflow, make a overflow block
         int numEmps = 0;
-        for(int ii = 0; ii < blocks.size(); ii++) {
-            for(int jj = 0; jj < blocks[ii].employees[jj]; jj ++) {
+        for(int ii = 0; ii < blocks.size(); ii++){
+            for(int jj = 0; jj < blocks[ii].employees.size(); jj++){
                 numEmps++;
             }
         }
-        split(index, emp);
-    } else {
-        blocks[index].employees[sizeof(blocks[index])] = emp;
+        // total size of all emps / (number of blocks * 4096) > 0.8
+        if(((float)getTableSize() / (float)(blocks.size() * 4096)) > SPLIT_PARAMETER){
+            split(index, emp);
+        }
+    } else{
+        blocks[index].employees.push_back(emp);
     }
 }
 
-void HashTable::split(int index, Employee emp) {
+void HashTable::split(int index, Employee emp){
     cout << "shout out bananas cuz ima split";
 }
 
@@ -100,14 +114,17 @@ vector<Employee> getEmployeesFromFile(string filename){
 }
 
 int main(int argc, char* argv[]){
+    HashTable h;
     vector<Employee> employees = getEmployeesFromFile("Employees.csv");
     for(int i = 0; i < employees.size(); i++){
+        cout << "Inserting employee. . ." << endl;
         cout << "id: " << employees[i].id << endl;
         cout << "name: " << employees[i].name << endl;
         cout << "bio: " << employees[i].bio << endl;
         cout << "managerId: " << employees[i].managerId << endl;
+        h.insert(employees[i]);
         cout << "------------------------" << endl;
     }
-    cout << "There were " << employees.size() << " employees in total" << endl;
+    cout << "There are " << employees.size() << " employees in total" << endl;
 }
 
