@@ -14,12 +14,9 @@ using namespace std;
 
 class Employee{
 public:
-    string id;
-    string managerId;
-    string bio;
-    string name;
-
-    Employee(string id, string managerId, string bio, string name);
+    string id, name, bio, managerId;
+    Employee(string id, string name, string bio, string managerId);
+    int getSize();
 };
 
 Employee::Employee(string id, string name, string bio, string managerId){
@@ -30,17 +27,33 @@ Employee::Employee(string id, string name, string bio, string managerId){
     this->name = name.substr(0, NAME_SIZE);
 }
 
+int Employee::getSize(){
+    return id.size() + name.size() + bio.size() + managerId.size();
+}
+
 class Block{
 public:
     vector<Employee> employees;
 
     void insert(Employee);
+    int getTotalSize();
 };
+
+void Block::insert(Employee emp){
+// make sure to enforce block size
+}
+
+int Block::getTotalSize(){
+    int sum = 0;
+    for(int ii = 0; ii < employees.size(); ii++){
+        sum += employees[ii].getSize();
+    }
+    return sum;
+}
 
 class HashTable{
 public:
     int n; //n = current block
-    int modfactor; //[original number of blocks]*2^[number of blocks]
     
     vector<Block> blocks;
 
@@ -53,7 +66,7 @@ void HashTable::insert(Employee emp) {
     int id = stoi(emp.id);
     int index = id % modfactor;
 
-    if(sizeof(blocks[index]) + sizeof(emp) > 4096) {
+    if((blocks[index].getTotalSize() + emp.getSize()) > 4096) {
         //overflow, make a overflow block
         int numEmps = 0;
         for(int ii = 0; ii < blocks.size(); ii++) {
@@ -71,7 +84,7 @@ void HashTable::split(int index, Employee emp) {
     cout << "shout out bananas cuz ima split";
 }
 
-vector<Employee> getemployeesFromFile(string filename){
+vector<Employee> getEmployeesFromFile(string filename){
     vector<Employee> employees;
     string id, name, bio, managerId;
 
@@ -87,7 +100,7 @@ vector<Employee> getemployeesFromFile(string filename){
 }
 
 int main(int argc, char* argv[]){
-    vector<Employee> employees = getemployeesFromFile("Employees.csv");
+    vector<Employee> employees = getEmployeesFromFile("Employees.csv");
     for(int i = 0; i < employees.size(); i++){
         cout << "id: " << employees[i].id << endl;
         cout << "name: " << employees[i].name << endl;
